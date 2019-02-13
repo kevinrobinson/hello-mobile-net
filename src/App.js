@@ -76,13 +76,13 @@ export default class App extends Component {
     });
   }
 
-  onChangeThreshold(e) {
-    this.setState({thresholdToShowText: e.target.value});
+  onChangeThreshold(thresholdToShowText) {
+    this.setState({thresholdToShowText});
   }
 
   render() {
-    const {thresholdToShowText, topK} = this.state;
-
+    const {topK} = this.state;
+    const thresholdToShow = this.thresholdToShow();
     return (
       <div className="App">
         <header className="App-floating">
@@ -91,11 +91,20 @@ export default class App extends Component {
               <img src={toSvg("dog")} height="64" width="64" alt="dog" />
               <button style={{fontSize: 24, background: '#ccc', border: '1px solid #999', padding: 5, height: '2em'}}onClick={this.onReset}>reset</button>
             </div>
-            <p className="App-floating-title">guesses >= <input className="App-floating-input" type="text" value={thresholdToShowText} onChange={this.onChangeThreshold}/>%</p>
-            <Slider min={0} defaultValue={90} marks={{ 10: 10, 50: 50, 90: 90, 99: 99 }} step={null} />
+            <p className="App-floating-title">guesses >= {thresholdToShow}%</p>
+            <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+              <Slider
+                style={{width: '80%', height: '2em'}}
+                onChange={this.onChangeThreshold}
+                min={0}
+                value={thresholdToShow}
+                marks={{ 10: 10, 50: 50, 90: 90, 99: 99 }}
+                step={null} 
+              />
+            </div>
             <div>{!topK && 'loading...'}</div>
             <div>
-              {topK && topK.filter(k => k.value * 100 >= this.thresholdToShow()).map((k, index) => (
+              {topK && topK.filter(k => k.value * 100 >= thresholdToShow).map((k, index) => (
                 <div key={k.label} style={{display: 'flex', fontWeight: index === 0 ? 'bold' : 'normal'}}>
                   <div style={{display: 'inline-block', padding: 5, width: '2em'}}>{Math.round(k.value * 100)}%</div>
                   <div style={{display: 'inline-block', padding: 5, flex: 1}}>{k.label}</div>
