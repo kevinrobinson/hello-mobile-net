@@ -59,3 +59,47 @@ export class Game {
     return topK;
   }
 }
+
+
+/**
+ * Checks if the current platform is iOS.
+ *
+ * @returns true if the platform is iOS, false otherwise.
+ */
+function isIOS() {
+  return /iPhone|iPad|iPod/i.test(navigator.userAgent);
+}
+
+
+
+const GAME_STRINGS = {
+  CAMERA_NO_ACCESS: 'Hey! To play you’ll need to enable camera access in ' +
+      'your browser address bar 👆. Your camera is how you’ll ' +
+      'find emojis in the real world. We won’t store any ' +
+      'images from your camera. 👍',
+  SAFARI_WEBVIEW: '🚨 To play this game, please open it directly in Safari. ' +
+      'If needed, copy/paste or type the URL into the address bar. ' +
+      'https://g.co/emojiscavengerhunt 🚨',
+  CAMERA_GENERAL_ERROR: 'It looks like your browser or device doesn’t ' +
+      'support this experiment. It’s designed to work best ' +
+      'on mobile (iOS/Safari or Android/Chrome). 😭'
+};
+
+
+export function interpretInitializationError(error) {
+  // iOS does not provide access to mediaDevices.getUserMedia via
+  // UiWebviews in iOS 11.2 - This causes a TypeError to be returned
+  // which we handle to display a relevant message to encourage the user
+  // to open the game in the standard Safari app.
+  if (error.name === 'TypeError' && isIOS()) {
+    return {error: error, code: 'SAFARI_WEBVIEW', messageText: GAME_STRINGS.SAFARI_WEBVIEW };
+  } else if (error.name === 'NotAllowedError') {
+    // Users that explicitly deny camera access get a message that
+    // encourages them to enable camera access.
+    return {error: error, code: 'CAMERA_NO_ACCESS', messageText: GAME_STRINGS.CAMERA_NO_ACCESS };
+  } else {
+    // General error message for issues getting camera access via
+    // mediaDevices.getUserMedia.
+    return {error: error, code: 'CAMERA_GENERAL_ERROR', messageText: GAME_STRINGS.CAMERA_GENERAL_ERROR };
+  }
+}

@@ -1,8 +1,25 @@
+html {
+  height: 100%;
+}
+
+body {
+  height: 100%;
+  width: 100%;
+  display: flex; 
+}
+
+#root {
+  flex: 1;
+  display: flex;  
+}
+
+
 .App {
+  flex: 1;
+  display: flex;
   text-align: center;
   background-color: #282c34;
   position: relative;
-  min-height: 100vh;
   font-size: calc(6px + 2vmin);
 }
 
@@ -16,35 +33,41 @@
   text-decoration: none;
 }
 
-.App-video {
+.App-error-message {
+  color: black;
+  background: white;
+  border-radius: 5px;
+  width: 80%;
+  left: 5%;
+  right: 5%;
   position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 70%;
+  top: 10%;
+  padding: 10px;
+  z-index: 10;
+}
+
+.App-video {
+  flex: 7;
   height: 100%;
 }
 
 .App-floating {
   background: #cce8ffcc;
-  position: absolute;
-  right: 0px;
-  top: 0px;
-  z-index: 1;
+  flex: 3;
   color: #f8f8f8;
-  height: 100%;
-  width: 30%;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
 }
 
 .App-floating-panel {
-  padding: 20px;
-  overflow: hidden;
+  padding: 10px;
+  overflow-y: scroll;
 }
 
 
 .App-floating-title {
   font-weight: bold;
   color: #333;
+  margin-bottom: 5px;
 }
