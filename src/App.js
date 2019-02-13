@@ -3,7 +3,11 @@ import _ from 'lodash';
 import './App.css';
 import {Game} from './Game';
 import {toSvg} from './svgEmoji'
-
+import Slider, { Range } from 'rc-slider';
+// We can just import Slider or Range to reduce bundle size
+// import Slider from 'rc-slider/lib/Slider';
+// import Range from 'rc-slider/lib/Range';
+import 'rc-slider/assets/index.css';
 
 function uniqueGuessesSoFar(guessHistory) {
   return guessHistory ? _.uniq(guessHistory.map(k => k.label)).sort() : [];
@@ -88,6 +92,7 @@ export default class App extends Component {
               <button style={{fontSize: 24, background: '#ccc', border: '1px solid #999', padding: 5, height: '2em'}}onClick={this.onReset}>reset</button>
             </div>
             <p className="App-floating-title">guesses >= <input className="App-floating-input" type="text" value={thresholdToShowText} onChange={this.onChangeThreshold}/>%</p>
+            <Slider min={0} defaultValue={90} marks={{ 10: 10, 50: 50, 90: 90, 99: 99 }} step={null} />
             <div>{!topK && 'loading...'}</div>
             <div>
               {topK && topK.filter(k => k.value * 100 >= this.thresholdToShow()).map((k, index) => (
