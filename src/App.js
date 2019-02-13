@@ -3,7 +3,7 @@ import _ from 'lodash';
 import './App.css';
 import {Game} from './Game';
 import {toSvg} from './svgEmoji'
-import Slider, { Range } from 'rc-slider';
+import Slider from 'rc-slider';
 // We can just import Slider or Range to reduce bundle size
 // import Slider from 'rc-slider/lib/Slider';
 // import Range from 'rc-slider/lib/Range';
