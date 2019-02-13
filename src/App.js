@@ -129,7 +129,7 @@ export default class App extends Component {
 
   renderGuesses() {
     const {guessesThreshold} = this.props;
-    const {guessHistory, startedTimestampMs, timeOfBoomMs} = this.state;
+    const {guessHistory} = this.state;
     const guessesSoFar = uniqueGuessesSoFar(guessHistory);
     
     if (guessesSoFar.length <= guessesThreshold) {
@@ -140,7 +140,8 @@ export default class App extends Component {
       );
     }
 
-    return `boom! more than ${guessesThreshold} in ${Math.round((timeOfBoomMs - startedTimestampMs) / 1000)} seconds`;
+    return `boom! more than ${guessesThreshold}`;
+    // return `boom! more than ${guessesThreshold} in ${Math.round((timeOfBoomMs - startedTimestampMs) / 1000)} seconds`;
   }
 }
 App.defaultProps = {
