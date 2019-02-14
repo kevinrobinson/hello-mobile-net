@@ -58,7 +58,6 @@ export default class App extends Component {
 
   onGameInitializationError(error) {
     const {messageText} = interpretInitializationError(error);
-    console.error('onGameInitializationError', error);
     this.setState({errorMessageText: messageText});
   }
 
@@ -90,7 +89,7 @@ export default class App extends Component {
     const {topK} = this.state;
     const thresholdToShow = this.thresholdToShow();
     const guesses = (topK || []).filter(k => k.value * 100 >= thresholdToShow);
-    
+    console.log('topK', topK);
     return (
       <div className="App-floating">
         <div className="App-floating-panel" style={{flex: 2}}>
@@ -123,7 +122,7 @@ export default class App extends Component {
               onChange={this.onChangeThreshold}
               min={0}
               value={thresholdToShow}
-              marks={{ 10: 10, 50: 50, 85: 85, 99: 99 }}
+              marks={{ 1: 1, 10:10, 50: 50, 85: 85, 99: 99 }}
               step={null} 
             />
           </div>

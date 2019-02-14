@@ -25,8 +25,7 @@ type TensorMap = {[name: string]: tfc.Tensor};
 
 const MODEL_FILE_URL = '/mobilenet/web_model/tensorflowjs_model.pb';
 const WEIGHT_MANIFEST_FILE_URL = '/mobilenet/web_model/weights_manifest.json';
-const INPUT_NODE_NAME = 'input';
-const OUTPUT_NODE_NAME = 'final_result';
+const INPUT_NODE_NAME = 'images';
 const PREPROCESS_DIVISOR = tfc.scalar(255 / 2);
 
 
@@ -62,7 +61,7 @@ export class MobileNet {
         preprocessedInput.reshape([1, ...preprocessedInput.shape]);
     const dict: TensorMap = {};
     dict[INPUT_NODE_NAME] = reshapedInput;
-    return this.model.execute(dict, OUTPUT_NODE_NAME) as tfc.Tensor1D;
+    return this.model.execute(dict) as tfc.Tensor1D;
   }
 
   getTopKClasses(predictions: tfc.Tensor1D, topK: number) {
@@ -78,7 +77,8 @@ export class MobileNet {
     }).slice(0, topK);
 
     return predictionList.map(x => {
-      return {label: IMAGENET_CLASSES[x.index], value: x.value};
+      const value = x.value / 100; // map to same as emoji
+      return {label: IMAGENET_CLASSES[x.index], value};
     });
   }
 }
