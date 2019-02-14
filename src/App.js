@@ -15,17 +15,18 @@ export default class App extends Component {
 
     this.scheduleNextTick = this.scheduleNextTick.bind(this);
     this.onGameInitialized = this.onGameInitialized.bind(this);
+    this.onGameInitializationError = this.onGameInitializationError.bind(this);
     this.onReset = this.onReset.bind(this);
     this.onChangeThreshold = this.onChangeThreshold.bind(this);
   }
 
   componentDidMount() {
-    // if (!this.videoElementEl) return;
+    if (!this.videoElementEl) return;
     
-    // this.game = new Game(this.videoElementEl);
-    // this.game.init()
-    //   .then(this.onGameInitialized)
-    //   .catch(this.onGameInitializationError)
+    this.game = new Game(this.videoElementEl);
+    this.game.init()
+      .then(this.onGameInitialized)
+      .catch(this.onGameInitializationError)
   }
 
   thresholdToShow() {

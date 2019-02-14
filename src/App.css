@@ -37,23 +37,26 @@ body {
   color: black;
   background: white;
   border-radius: 5px;
-  width: 80%;
-  left: 5%;
-  right: 5%;
   position: absolute;
-  top: 10%;
-  padding: 10px;
+  left: 10%;
+  right: 10%;
+  top: 20%;
+  padding: 30px;
+  font-size: calc(10px + 2vmin);
+  display: flex;
+  justify-content: center;
+  align-items: center;
   z-index: 10;
 }
 
 .App-video {
-  flex: 7;
+  width: 70%;
   height: 100%;
 }
 
 .App-floating {
   background: #cce8ffcc;
-  flex: 3;
+  width: 30%;
   color: #f8f8f8;
   display: flex;
   flex-direction: column;
