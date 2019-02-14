@@ -169,7 +169,7 @@ function initialState() {
   return {
     errorMessageText: null,
     topK: null,
-    thresholdToShowText: '90',
+    thresholdToShowText: '10',
     guessHistory: [],
     startedTimestampMs: null,
     timeOfBoomMs: null
