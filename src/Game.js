@@ -1,5 +1,6 @@
 import * as tfc from '@tensorflow/tfjs-core';
-import {MobileNet} from './scavenger/mobile_net';
+// import {MobileNet as EmojiNet} from './scavenger/mobile_net';
+import {MobileNet} from './mobilenet/mobile_net';
 import {Camera, VIDEO_PIXELS} from './scavenger/camera';
 
 

@@ -58,6 +58,7 @@ export default class App extends Component {
 
   onGameInitializationError(error) {
     const {messageText} = interpretInitializationError(error);
+    console.error('onGameInitializationError', error);
     this.setState({errorMessageText: messageText});
   }
 
