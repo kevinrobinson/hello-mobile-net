@@ -6,6 +6,10 @@ read more at https://medium.com/tensorflow/a-look-at-how-we-built-the-emoji-scav
 ### Demo
 https://hello-mobile-net.herokuapp.com/
 
+![dog](doc/dog.png)
+![frying-pan](doc/frying-pan.png)
+![shark](doc/shark.png)
+
 ### Development
 `$ yarn start`
 
