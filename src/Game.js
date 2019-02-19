@@ -58,13 +58,18 @@ export class Game {
             pixels.slice([beginHeight, beginWidth, 0],
                          [VIDEO_PIXELS, VIDEO_PIXELS, 3]);
 
-      return this.net.predict(pixelsCropped);
+      const predictionResult = this.net.predict(pixelsCropped);
+      return {
+        predictionResult,
+        inputPixels: pixelsCropped.dataSync()
+      };
     });
 
     // This call retrieves the topK matches from our MobileNet for the
     // provided image data.
-    const topK = await this.net.getTopKClasses(result, 10);
-    return topK;
+    const {predictionResult, inputPixels} = result;
+    const prediction = await this.net.getTopKClasses(predictionResult, 10);
+    return {...prediction, pixels: inputPixels};
   }
 }
 

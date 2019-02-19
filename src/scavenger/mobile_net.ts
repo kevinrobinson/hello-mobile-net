@@ -22,6 +22,13 @@ import {SCAVENGER_CLASSES} from './scavenger_classes';
 
 
 type TensorMap = {[name: string]: tfc.Tensor};
+type PredictionOutput = {
+  raw: any,
+  topK: {
+    label: string,
+    value: number
+  }[]
+};
 
 const MODEL_FILE_URL = '/model/tensorflowjs_model.pb';
 const WEIGHT_MANIFEST_FILE_URL = '/model/weights_manifest.json';
@@ -65,7 +72,7 @@ export class MobileNet {
     return this.model.execute(dict, OUTPUT_NODE_NAME) as tfc.Tensor1D;
   }
 
-  getTopKClasses(predictions: tfc.Tensor1D, topK: number):{label: string, value: number}[] {
+  getTopKClasses(predictions: tfc.Tensor1D, topK: number):PredictionOutput {
     const values = predictions.dataSync();
     predictions.dispose();
 
@@ -77,8 +84,13 @@ export class MobileNet {
       return b.value - a.value;
     }).slice(0, topK);
 
-    return predictionList.map(x => {
+    const labelsAndValues = predictionList.map(x => {
       return {label: SCAVENGER_CLASSES[x.index], value: x.value};
     });
+
+    return {
+      topK: labelsAndValues,
+      raw: values
+    };
   }
 }

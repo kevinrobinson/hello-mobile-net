@@ -21,6 +21,7 @@ export default class App extends Component {
     this.onReset = this.onReset.bind(this);
     this.onChangeThreshold = this.onChangeThreshold.bind(this);
     this.onToggleNet = this.onToggleNet.bind(this);
+    this.onPeekInside = this.onPeekInside.bind(this);
   }
 
   componentDidMount() {
@@ -63,8 +64,9 @@ export default class App extends Component {
   scheduleNextTick() {
     if (this.isRebuilding) return;
 
-    const {guessesThreshold, refreshIntervalMs} = this.props;
-    this.game.predict().then(topK => {
+    const {guessesThreshold} = this.props;
+    this.game.predict().then(prediction => {
+      const {topK, raw, pixels} = prediction;
       const thresholdToShow = this.thresholdToShow();
       const k = topK[0];
       const guessHistory = (k.value * 100 >= thresholdToShow)
@@ -73,8 +75,8 @@ export default class App extends Component {
       const timeOfBoomMs = (uniqueGuessesSoFar(guessHistory).length <= guessesThreshold && this.state.timeOfBoomMs === null)
         ? new Date().getTime()
         : null;
-      this.setState({topK, guessHistory, timeOfBoomMs});
-      window.setTimeout(this.scheduleNextTick, refreshIntervalMs);
+      this.setState({topK, raw, pixels, guessHistory, timeOfBoomMs});
+      requestAnimationFrame(this.scheduleNextTick);
     });
   }
 
@@ -113,6 +115,11 @@ export default class App extends Component {
     this.setState({thresholdToShowText});
   }
 
+  onPeekInside(e) {
+    e.preventDefault();
+    this.setState({isPeeking: !this.state.isPeeking});
+  }
+
   render() {
     const {errorMessageText} = this.state;
     return (
@@ -130,10 +137,10 @@ export default class App extends Component {
   }
 
   renderSidebar() {
-    const {netKey, topK} = this.state;
+    const {isPeeking, netKey, topK} = this.state;
     const thresholdToShow = this.thresholdToShow();
     const guesses = (topK || []).filter(k => k.value * 100 >= thresholdToShow);
-    console.log('guesses', guesses);
+
     return (
       <div className="App-floating">
         <div className="App-floating-panel" style={{flex: 2}}>
@@ -155,7 +162,7 @@ export default class App extends Component {
           </div>
         </div>
         <div className="App-floating-panel" style={{flex: 3}}>
-          {this.renderGuesses()}
+          {isPeeking ? this.renderPeek() : this.renderGuesses()}
         </div>
         <div className="App-floating-panel">
           <div className="App-floating-title">confidence level</div>
@@ -177,7 +184,42 @@ export default class App extends Component {
                 onClick={this.onToggleNet}>
                 {netKey}
               </a>
+              <a
+                href="/?peek"
+                style={{color: 'black', marginLeft: 10}}
+                onClick={this.onPeekInside}>
+                peek inside
+              </a>
             </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  renderPeek() {
+    const {pixels, raw} = this.state;
+    const PIXEL_LENGTH = 6;
+    const OUTPUT_LENGTH = 3;
+    const inputs = (pixels || []);
+    const outputs = (raw || []);
+    return (
+      <div>
+        <div>
+          <div style={{fontWeight: 'bold'}}>input pixels vector:</div>
+          <div>
+            <div>
+              <span>{(pixels || []).slice(0, PIXEL_LENGTH).join(' ')}</span>
+              <span>...</span>
+            </div>
+            <div>+{inputs.length - PIXEL_LENGTH} more</div>
+          </div>
+        </div>
+        <div>
+          <div style={{fontWeight: 'bold', marginTop: 10}}>output classes vector:</div>
+          <div>
+            {_.range(0, OUTPUT_LENGTH).map(i => <div key={i}>{outputs[i].toFixed(6)}</div>)}
+            <div>+{outputs.length - OUTPUT_LENGTH} more</div>
           </div>
         </div>
       </div>
@@ -220,6 +262,9 @@ function initialState() {
     netKey: readNetKeyFromWindow(),
     errorMessageText: null,
     topK: null,
+    raw: null,
+    pixels: null,
+    isPeeking: false,
     thresholdToShowText: '10',
     guessHistory: [],
     startedTimestampMs: null,

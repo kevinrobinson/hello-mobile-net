@@ -20,6 +20,13 @@ import * as tfc from '@tensorflow/tfjs-core';
 import {loadFrozenModel, FrozenModel} from '@tensorflow/tfjs-converter';
 import {IMAGENET_CLASSES} from './imagenet_classes';
 type TensorMap = {[name: string]: tfc.Tensor};
+type PredictionOutput = {
+  raw: any,
+  topK: {
+    label: string,
+    value: number
+  }[]
+};
 
 
 
@@ -64,7 +71,7 @@ export class MobileNet {
     return this.model.execute(dict) as tfc.Tensor1D;
   }
 
-  getTopKClasses(predictions: tfc.Tensor1D, topK: number):{label: string, value: number}[] {
+  getTopKClasses(predictions: tfc.Tensor1D, topK: number):PredictionOutput {
     const values = predictions.dataSync();
     predictions.dispose();
 
@@ -83,6 +90,10 @@ export class MobileNet {
       const label = IMAGENET_CLASSES[x.index];
       if (label) labelsAndValues.push({label, value});
     });
-    return labelsAndValues;
+    
+    return {
+      topK: labelsAndValues,
+      raw: values
+    };
   }
 }
