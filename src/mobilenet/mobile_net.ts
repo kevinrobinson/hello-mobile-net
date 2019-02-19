@@ -47,6 +47,10 @@ export class MobileNet {
     );
   }
 
+  classNames() {
+    return Object.values(IMAGENET_CLASSES);
+  }
+  
   dispose() {
     if (this.model) {
       this.model.dispose();
@@ -90,7 +94,7 @@ export class MobileNet {
       const label = IMAGENET_CLASSES[x.index];
       if (label) labelsAndValues.push({label, value});
     });
-    
+
     return {
       topK: labelsAndValues,
       raw: values

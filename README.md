@@ -18,6 +18,4 @@ https://hello-mobile-net.herokuapp.com/
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ### repl.it
-https://repl.it/@kevinrobinson/NormalMiserlyWorkspace almost works, but I couldn't figure out how to upload binary files to repl.it.  Fetching models from https://hello-mobile-net.herokuapp.com/ or emoji scavenger hunt leads to errors since they don't allow cross-origin requests.
-
-but no reason not to put these on a repl!
+https://repl.it/@kevinrobinson/NormalMiserlyWorkspace is an older version and works, showing that these can be made in repl.it and shared.  I couldn't figure out how to upload binary files to repl.it, and fetching models from https://hello-mobile-net.herokuapp.com/ or emoji scavenger hunt leads to errors since they don't allow cross-origin requests, so model files are hosted in a S3 bucket that allows them.

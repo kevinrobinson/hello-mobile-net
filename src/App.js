@@ -22,6 +22,7 @@ export default class App extends Component {
     this.onChangeThreshold = this.onChangeThreshold.bind(this);
     this.onToggleNet = this.onToggleNet.bind(this);
     this.onPeekInside = this.onPeekInside.bind(this);
+    this.onOutputsClicked = this.onOutputsClicked.bind(this);
   }
 
   componentDidMount() {
@@ -46,10 +47,10 @@ export default class App extends Component {
     }
 
     // setup
-    const net = (netKey === 'emojinet')
+    this.net = (netKey === 'emojinet')
       ? new EmojiNet()
       : new MobileNet();
-    this.game = new Game(net, this.videoElementEl);
+    this.game = new Game(this.net, this.videoElementEl);
     this.game.init()
       .then(this.onGameInitialized)
       .catch(this.onGameInitializationError)
@@ -120,6 +121,15 @@ export default class App extends Component {
     this.setState({isPeeking: !this.state.isPeeking});
   }
 
+  onOutputsClicked(e) {
+    e.preventDefault();
+    if (this.net) {
+      const classNames = this.net.classNames();
+      const samples = _.sampleSize(classNames, 25);
+      alert(`This model looks for ${classNames.length} different things, here's a sample of some of them:\n\n${samples.join("\n")}`);
+    }
+  }
+
   render() {
     const {errorMessageText} = this.state;
     return (
@@ -185,10 +195,16 @@ export default class App extends Component {
                 {netKey}
               </a>
               <a
+                href="/?outputs"
+                style={{color: 'black', marginLeft: 10}}
+                onClick={this.onOutputsClicked}>
+                outputs
+              </a>
+              <a
                 href="/?peek"
                 style={{color: 'black', marginLeft: 10}}
                 onClick={this.onPeekInside}>
-                peek inside
+                peek in
               </a>
             </div>
           </div>

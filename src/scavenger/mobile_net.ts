@@ -48,6 +48,10 @@ export class MobileNet {
     );
   }
 
+  classNames() {
+    return Object.values(SCAVENGER_CLASSES);
+  }
+
   dispose() {
     if (this.model) {
       this.model.dispose();
