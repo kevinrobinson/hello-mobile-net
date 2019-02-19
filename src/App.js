@@ -5,6 +5,8 @@ import {Game, interpretInitializationError} from './Game';
 import {toSvg} from './svgEmoji'
 import Slider from 'rc-slider/lib/Slider';
 import 'rc-slider/assets/index.css';
+import {MobileNet as EmojiNet} from './scavenger/mobile_net';
+import {MobileNet} from './mobilenet/mobile_net';
 
 
 export default class App extends Component {
@@ -18,12 +20,35 @@ export default class App extends Component {
     this.onGameInitializationError = this.onGameInitializationError.bind(this);
     this.onReset = this.onReset.bind(this);
     this.onChangeThreshold = this.onChangeThreshold.bind(this);
+    this.onToggleNet = this.onToggleNet.bind(this);
   }
 
   componentDidMount() {
     if (!this.videoElementEl) return;
-    
-    this.game = new Game(this.videoElementEl);
+    this.rebuildGame();
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState.netKey !== this.state.netKey) {
+      this.rebuildGame();
+    }
+  }
+
+  rebuildGame() {
+    console.log('rebuildGame');
+    this.isRebuilding = true;
+    const {netKey} = this.state;
+
+    // teardown
+    if (this.game) {
+      this.game.dispose();
+    }
+
+    // setup
+    const net = (netKey === 'emojinet')
+      ? new EmojiNet()
+      : new MobileNet();
+    this.game = new Game(net, this.videoElementEl);
     this.game.init()
       .then(this.onGameInitialized)
       .catch(this.onGameInitializationError)
@@ -36,6 +61,8 @@ export default class App extends Component {
   }
 
   scheduleNextTick() {
+    if (this.isRebuilding) return;
+
     const {guessesThreshold, refreshIntervalMs} = this.props;
     this.game.predict().then(topK => {
       const thresholdToShow = this.thresholdToShow();
@@ -51,7 +78,23 @@ export default class App extends Component {
     });
   }
 
+  onToggleNet(e) {
+    e.preventDefault();
+
+    const {thresholdToShowText} = this.state;
+    const netKey = (this.state.netKey === 'emojinet')
+      ? 'mobilenet'
+      : 'emojinet';
+    this.setState({
+      ...initialState(),
+      thresholdToShowText,
+      netKey
+    });
+  }
+
   onGameInitialized() {
+    console.log('onGameInitialized');
+    this.isRebuilding = false;
     this.setState({startedTimestampMs: new Date().getTime()});
     this.scheduleNextTick();
   }
@@ -61,8 +104,9 @@ export default class App extends Component {
     this.setState({errorMessageText: messageText});
   }
 
-  onReset() {
-    this.setState(initialState());
+  onReset(e) {
+    e.preventDefault();
+    this.setState({guessHistory: []});
   }
 
   onChangeThreshold(thresholdToShowText) {
@@ -86,16 +130,16 @@ export default class App extends Component {
   }
 
   renderSidebar() {
-    const {topK} = this.state;
+    const {netKey, topK} = this.state;
     const thresholdToShow = this.thresholdToShow();
     const guesses = (topK || []).filter(k => k.value * 100 >= thresholdToShow);
-    console.log('topK', topK);
+    console.log('guesses', guesses);
     return (
       <div className="App-floating">
         <div className="App-floating-panel" style={{flex: 2}}>
           <div className="App-floating-title">best guess right now</div>
           <div>
-            <div>{!topK && 'loading...'}</div>
+            <div>{!topK && <div style={{fontSize: 36, marginTop: 20}}>loading...</div>}</div>
             {topK && guesses.length === 0 && (
               <div style={{marginLeft: '35%', textAlign: 'left'}}>
                 <span>not sure</span>
@@ -111,8 +155,7 @@ export default class App extends Component {
           </div>
         </div>
         <div className="App-floating-panel" style={{flex: 3}}>
-          <div className="App-floating-title">guesses so far</div>
-          <div>{this.renderGuesses()}</div>
+          {this.renderGuesses()}
         </div>
         <div className="App-floating-panel">
           <div className="App-floating-title">confidence level</div>
@@ -127,8 +170,14 @@ export default class App extends Component {
             />
           </div>
           <div style={{display: 'flex', justifyContent: 'space-around', alignItems: 'center', marginBottom: 10}}>
-            <div><a href="/" style={{fontWeight: 'bold', color: 'black'}}>hello-mobile-net</a></div>
-            <button style={{background: '#ccc', border: '1px solid #999', padding: 5}}onClick={this.onReset}>reset</button>
+            <div>
+              <a
+                href="/"
+                style={{color: 'black', fontWeight: 'bold'}}
+                onClick={this.onToggleNet}>
+                {netKey}
+              </a>
+            </div>
           </div>
         </div>
       </div>
@@ -136,23 +185,24 @@ export default class App extends Component {
   }
 
   renderGuesses() {
-    const {guessesThreshold} = this.props;
     const {guessHistory} = this.state;
     const guessesSoFar = uniqueGuessesSoFar(guessHistory);
     
-    if (guessesSoFar.length <= guessesThreshold) {
-      return (
+    return (
+      <div>
+        <div className="App-floating-title">
+          <span>guesses so far</span>
+          {guessesSoFar.length > 0 ? ` (${guessesSoFar.length})` : ''}
+          <a href="/?reset" style={{color: 'black', padding: 5}} onClick={this.onReset}>reset</a>
+        </div>
         <div>{guessesSoFar.map(label => (
           <div key={label}>
             <span>{label}</span>
             <img src={toSvg(label)} height="16" width="16" alt="" />
           </div>
         ))}</div>
-      );
-    }
-
-    return `boom! more than ${guessesThreshold}`;
-    // return `boom! more than ${guessesThreshold} in ${Math.round((timeOfBoomMs - startedTimestampMs) / 1000)} seconds`;
+      </div>
+    );
   }
 }
 App.defaultProps = {
@@ -167,6 +217,7 @@ function uniqueGuessesSoFar(guessHistory) {
 
 function initialState() {
   return {
+    netKey: readNetKeyFromWindow(),
     errorMessageText: null,
     topK: null,
     thresholdToShowText: '10',
@@ -174,4 +225,11 @@ function initialState() {
     startedTimestampMs: null,
     timeOfBoomMs: null
   };
+}
+
+
+function readNetKeyFromWindow() {
+  if (window.location.search.indexOf('emojinet') !== -1) return 'emojinet';
+  if (window.location.search.indexOf('mobilenet') !== -1) return 'mobilenet';
+  return 'emojinet';
 }

@@ -65,7 +65,7 @@ export class MobileNet {
     return this.model.execute(dict, OUTPUT_NODE_NAME) as tfc.Tensor1D;
   }
 
-  getTopKClasses(predictions: tfc.Tensor1D, topK: number) {
+  getTopKClasses(predictions: tfc.Tensor1D, topK: number):{label: string, value: number}[] {
     const values = predictions.dataSync();
     predictions.dispose();
 

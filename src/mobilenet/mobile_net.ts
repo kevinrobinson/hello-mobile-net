@@ -64,7 +64,7 @@ export class MobileNet {
     return this.model.execute(dict) as tfc.Tensor1D;
   }
 
-  getTopKClasses(predictions: tfc.Tensor1D, topK: number) {
+  getTopKClasses(predictions: tfc.Tensor1D, topK: number):{label: string, value: number}[] {
     const values = predictions.dataSync();
     predictions.dispose();
 
@@ -76,9 +76,13 @@ export class MobileNet {
       return b.value - a.value;
     }).slice(0, topK);
 
-    return predictionList.map(x => {
+    // some values aren't in the map, not sure why, but filter them out
+    var labelsAndValues:{label: string, value: number}[] = [];
+    predictionList.forEach(x => {
       const value = x.value / 100; // map to same as emoji
-      return {label: IMAGENET_CLASSES[x.index], value};
+      const label = IMAGENET_CLASSES[x.index];
+      if (label) labelsAndValues.push({label, value});
     });
+    return labelsAndValues;
   }
 }

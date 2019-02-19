@@ -1,18 +1,25 @@
 import * as tfc from '@tensorflow/tfjs-core';
-// import {MobileNet as EmojiNet} from './scavenger/mobile_net';
-import {MobileNet} from './mobilenet/mobile_net';
 import {Camera, VIDEO_PIXELS} from './scavenger/camera';
 
 
 export class Game {
-  constructor(videoElement) {
-    this.emojiScavengerMobileNet = new MobileNet();
+  constructor(net, videoElement) {
+    // net:{load,dispose,predict,getTopKClasses}
+    this.net = net;
     this.camera = new Camera(videoElement);
+  }
+
+  dispose() {
+    this.net.dispose();
+    this.camera.pauseCamera();
+    
+    this.net = null;
+    this.camera = null;
   }
 
   init() {
     return Promise.all([
-      this.emojiScavengerMobileNet.load().then(() => this.warmUpModel()),
+      this.net.load().then(() => this.warmUpModel()),
       this.camera.setupCamera().then(value => {
         this.camera.setupVideoDimensions(value[0], value[1]);
       }),
@@ -25,7 +32,7 @@ export class Game {
    * preempt the predict tensor setups.
    */
   warmUpModel() {
-    this.emojiScavengerMobileNet.predict(tfc.zeros([VIDEO_PIXELS, VIDEO_PIXELS, 3]));
+    this.net.predict(tfc.zeros([VIDEO_PIXELS, VIDEO_PIXELS, 3]));
   }
 
   /**
@@ -51,12 +58,12 @@ export class Game {
             pixels.slice([beginHeight, beginWidth, 0],
                          [VIDEO_PIXELS, VIDEO_PIXELS, 3]);
 
-      return this.emojiScavengerMobileNet.predict(pixelsCropped);
+      return this.net.predict(pixelsCropped);
     });
 
     // This call retrieves the topK matches from our MobileNet for the
     // provided image data.
-    const topK = await this.emojiScavengerMobileNet.getTopKClasses(result, 10);
+    const topK = await this.net.getTopKClasses(result, 10);
     return topK;
   }
 }
