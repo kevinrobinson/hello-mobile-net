@@ -65,7 +65,7 @@ export default class App extends Component {
   scheduleNextTick() {
     if (this.isRebuilding) return;
 
-    const {guessesThreshold} = this.props;
+    const {guessesThreshold, refreshIntervalMs} = this.props;
     this.game.predict().then(prediction => {
       const {topK, raw, pixels} = prediction;
       const thresholdToShow = this.thresholdToShow();
@@ -77,7 +77,7 @@ export default class App extends Component {
         ? new Date().getTime()
         : null;
       this.setState({topK, raw, pixels, guessHistory, timeOfBoomMs});
-      requestAnimationFrame(this.scheduleNextTick);
+      window.setTimeout(this.scheduleNextTick, refreshIntervalMs);
     });
   }
 
