@@ -76,7 +76,12 @@ export default class App extends Component {
       const timeOfBoomMs = (uniqueGuessesSoFar(guessHistory).length <= guessesThreshold && this.state.timeOfBoomMs === null)
         ? new Date().getTime()
         : null;
-      this.setState({topK, raw, pixels, guessHistory, timeOfBoomMs});
+
+      // peeking at pixels is slow
+      const updatedState = (this.state.allowPeeking)
+        ? {topK, raw, pixels, guessHistory, timeOfBoomMs}
+        : {topK, guessHistory, timeOfBoomMs};
+      this.setState(updatedState);
       window.setTimeout(this.scheduleNextTick, refreshIntervalMs);
     });
   }
@@ -147,7 +152,7 @@ export default class App extends Component {
   }
 
   renderSidebar() {
-    const {isPeeking, netKey, topK} = this.state;
+    const {isPeeking, netKey, topK, allowPeeking} = this.state;
     const thresholdToShow = this.thresholdToShow();
     const guesses = (topK || []).filter(k => k.value * 100 >= thresholdToShow);
 
@@ -200,12 +205,12 @@ export default class App extends Component {
                 onClick={this.onOutputsClicked}>
                 outputs
               </a>
-              <a
+              {allowPeeking && <a
                 href="/?peek"
                 style={{color: 'black', marginLeft: 10}}
                 onClick={this.onPeekInside}>
                 peek in
-              </a>
+              </a>}
             </div>
           </div>
         </div>
@@ -275,6 +280,7 @@ function uniqueGuessesSoFar(guessHistory) {
 
 function initialState() {
   return {
+    allowPeeking: (window.location.search.indexOf('peek') !== -1),
     netKey: readNetKeyFromWindow(),
     errorMessageText: null,
     topK: null,
