@@ -97,7 +97,7 @@ export class MobileNet {
 
     return {
       topK: labelsAndValues,
-      raw: values
+      raw: null // values
     };
   }
 }
